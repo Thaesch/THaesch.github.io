@@ -1,1 +1,1 @@
-# [See my Game Collection](thaesch.github.io/GameCollection)
+# [See my Game Collection](https://thaesch.github.io/GameCollection)
