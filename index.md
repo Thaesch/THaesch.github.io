@@ -1,1 +1,1 @@
-# Game Collection!
+# [See my Game Collection](thaesch.github.io/GameCollection)
