@@ -1,7 +1,7 @@
 ## Kontaktdaten
 Unsere Kontaktdaten findest Du im Impressum.
 Bei der Nutzung der App werden personenbezogene Daten über Dich verarbeitet. Unter personenbezogenen Daten sind sämtliche Informationen zu verstehen, die sich auf eine identifizierte oder identifizierbare natürliche Person beziehen. Weil uns der Schutz Deiner  Privatsphäre bei der Nutzung der App wichtig ist, möchten wir Dich mit den nachfolgenden Angaben darüber informieren, welche personenbezogenen Daten verarbeitet werden, wenn Du die App nutzt und wie wir mit diesen Daten umgehen. Du kannst diese Datenschutzerklärung jederzeit unter dem Menüeintrag „Datenschutzerklärung“ innerhalb der App aufrufen.
-Informationen zur Verarbeitung Deiner Daten
+## Informationen zur Verarbeitung Deiner Daten
 Bestimmte Informationen werden automatisch verarbeitet, sobald Du die App verwendest. Welche personenbezogenen Daten genau verarbeitet werden, haben wir im Folgenden für Dich aufgeführt:
 Informationen, die beim Download erhoben werden
 Beim Download der App werden bestimmte erforderliche Informationen an den von Dir ausgewählten App Store (z.B. Google Play oder Apple App Store) übermittelt. Insbesondere können dabei der Nutzername, die E-Mail-Adresse, die Kundennummer Deines Accounts, der Zeitpunkt des Downloads, Zahlungsinformationen sowie die individuelle Gerätekennziffer verarbeitet werden. Die Verarbeitung dieser Daten erfolgt ausschließlich durch Google Playstore und liegt außerhalb unseres Einflussbereiches.
