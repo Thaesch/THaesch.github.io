@@ -12,5 +12,5 @@ Unity könnte diese Daten mit dem Schalter der Anzeige teilen. Sollte eine perso
 Als Anbieter der App haben wir Zugriff auf die aggregierten Daten unserer App. Wir haben keinen Zugriff auf einzelne IP-Adressen oder Gerätenummern. Weitere Informationen zum Datenschutz von Unity Technologies findest Du hier: https://unity3d.com/de/legal/privacy-policy
 ## Google Admob
 Diese App verwendet Google AdMob zur Darstellung von Werbeanzeigen innerhalb der App. Google kann die Werbe-ID Deines Endgerätes, sowie Cookies und/oder ähnliche Technologien verwenden, um personenbezogene Daten zum Zwecke der Generierung und Anzeige von personalisierter Werbung zu erheben. Genauere Informationen darüber, welche Daten von Google erhoben und wie sie verarbeitet werden findest Du hier: https://www.google.com/policies/technologies/ads. Die vollständige Datenschutzerklärung von Google ist hier zu finden: https://www.google.com/policies/privacy/
-Änderungen dieser Datenschutzerklärung
+## Änderungen dieser Datenschutzerklärung
 Wir halten diese Datenschutzerklärung immer auf dem neuesten Stand. Deshalb behalten wir uns vor, sie von Zeit zu Zeit zu ändern und Änderungen bei der Erhebung, Verarbeitung oder Nutzung Deiner Daten nachzupflegen. Die aktuelle Fassung der Datenschutzerklärung ist stets unter „Datenschutzerklärung“ innerhalb der App abrufbar.
