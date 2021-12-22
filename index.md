@@ -14,3 +14,5 @@ I am a game developer from Germany and I hope to engage you with my projects!
 
 ## [Impressum](impressum.md)
 ## [Datenschutzbestimmung(App)](dsgvo.md)
+
+## [PrivacyPolicy](privacypolicy.md)
