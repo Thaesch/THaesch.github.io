@@ -17,15 +17,88 @@ let assetStore = {
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"];
 const AUDIO_EXTENSIONS = [".ogg", ".mp3", ".wav", ".flac", ".aac"];
 
+// --- IndexedDB Storage for FileSystemDirectoryHandle ---
+const DB_NAME = "KambriumAssetsDB";
+const STORE_NAME = "handles";
+const KEY_NAME = "assetsFolder";
+
+function getDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            db.createObjectStore(STORE_NAME);
+        };
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = (e) => reject(e.target.error);
+    });
+}
+
+async function saveDirectoryHandle(handle) {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(handle, KEY_NAME);
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+    } catch (e) {
+        console.error("Failed to save directory handle to IndexedDB:", e);
+    }
+}
+
+async function loadDirectoryHandle() {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const request = tx.objectStore(STORE_NAME).get(KEY_NAME);
+        return new Promise((resolve, reject) => {
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    } catch (e) {
+        console.error("Failed to load directory handle from IndexedDB:", e);
+        return null;
+    }
+}
+
+async function clearDirectoryHandle() {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).delete(KEY_NAME);
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+    } catch (e) {
+        console.error("Failed to clear directory handle from IndexedDB:", e);
+    }
+}
+
 function initAssetManager() {
     const selectBtn = document.getElementById("btn-select-assets");
     const clearBtn = document.getElementById("btn-clear-assets");
     const fallbackInput = document.getElementById("fallback-dir-input");
 
+    // Create reactivate button dynamically if it does not exist
+    let reactivateBtn = document.getElementById("btn-reactivate-assets");
+    if (!reactivateBtn && selectBtn) {
+        reactivateBtn = document.createElement("button");
+        reactivateBtn.id = "btn-reactivate-assets";
+        reactivateBtn.className = "btn btn-success btn-sm asset-folder-btn";
+        reactivateBtn.textContent = "🔄 Ordner laden";
+        reactivateBtn.style.display = "none";
+        reactivateBtn.style.marginRight = "6px"; // Add small spacing
+        selectBtn.parentNode.insertBefore(reactivateBtn, selectBtn);
+    }
+
     selectBtn.addEventListener("click", async () => {
         if (window.showDirectoryPicker) {
             try {
                 const dirHandle = await window.showDirectoryPicker({ mode: "read" });
+                await saveDirectoryHandle(dirHandle);
                 await scanDirectoryHandle(dirHandle);
             } catch (e) {
                 if (e.name !== "AbortError") {
@@ -38,6 +111,25 @@ function initAssetManager() {
             fallbackInput.click();
         }
     });
+
+    if (reactivateBtn) {
+        reactivateBtn.addEventListener("click", async () => {
+            const savedHandle = await loadDirectoryHandle();
+            if (savedHandle) {
+                try {
+                    const status = await savedHandle.requestPermission({ mode: "read" });
+                    if (status === "granted") {
+                        await scanDirectoryHandle(savedHandle);
+                    } else {
+                        showToast("⚠️ Zugriff wurde nicht erlaubt.");
+                    }
+                } catch (e) {
+                    console.error("Error requesting permission:", e);
+                    showToast("❌ Fehler beim Reaktivieren des Zugriffs.");
+                }
+            }
+        });
+    }
 
     fallbackInput.addEventListener("change", (e) => {
         const files = Array.from(e.target.files);
@@ -52,6 +144,9 @@ function initAssetManager() {
 
     // Restore cached asset index from localStorage
     restoreAssetIndex();
+
+    // Check if we can automatically load or need to show the reactivate button
+    tryAutoLoadDirectory();
 }
 
 async function scanDirectoryHandle(dirHandle) {
@@ -161,10 +256,17 @@ function resetAssetStore() {
     assetStore.bgUrls = {};
 }
 
-function clearAssetStore() {
+async function clearAssetStore() {
     resetAssetStore();
     localStorage.removeItem("kambrium_asset_index");
     localStorage.removeItem("kambrium_asset_folder_name");
+    await clearDirectoryHandle();
+
+    const reactivateBtn = document.getElementById("btn-reactivate-assets");
+    const selectBtn = document.getElementById("btn-select-assets");
+    if (reactivateBtn) reactivateBtn.style.display = "none";
+    if (selectBtn) selectBtn.textContent = "📂 Ordner wählen";
+
     updateAssetStatusUI();
     renderCommands();
 }
@@ -183,6 +285,12 @@ function finalizeAssetLoad() {
     saveAssetIndex();
     updateAssetStatusUI();
     renderCommands(); // Refresh command editors with new options
+
+    // Hide reactivate button and update select button text since we successfully loaded
+    const reactivateBtn = document.getElementById("btn-reactivate-assets");
+    const selectBtn = document.getElementById("btn-select-assets");
+    if (reactivateBtn) reactivateBtn.style.display = "none";
+    if (selectBtn) selectBtn.textContent = "📂 Anderer Ordner";
 
     const totalAssets = assetStore.backgrounds.length +
         Object.values(assetStore.sprites).reduce((sum, arr) => sum + arr.length, 0) +
@@ -239,8 +347,8 @@ function updateAssetStatusUI(isCachedOnly) {
     if (assetStore.loaded) {
         statusEl.className = "asset-status loaded";
         statusEl.querySelector(".asset-status-icon").textContent = isCachedOnly ? "🔄" : "✅";
-        const hint = isCachedOnly ? " (Cache — Ordner erneut wählen für Vorschau)" : "";
-        statusEl.querySelector(".asset-status-text").textContent = assetStore.folderName + "/" + hint;
+        const hint = isCachedOnly ? " (Cache — Klicke 'Ordner laden' für Vorschau)" : "";
+        statusEl.querySelector(".asset-status-text").textContent = assetStore.folderName + hint;
 
         document.getElementById("asset-count-bg").textContent = assetStore.backgrounds.length;
         document.getElementById("asset-count-sprites").textContent =
@@ -256,6 +364,33 @@ function updateAssetStatusUI(isCachedOnly) {
         statusEl.querySelector(".asset-status-text").textContent = "Kein Ordner gewählt";
         detailsEl.style.display = "none";
         clearBtn.style.display = "none";
+    }
+}
+
+async function tryAutoLoadDirectory() {
+    if (!window.showDirectoryPicker) return;
+
+    const savedHandle = await loadDirectoryHandle();
+    const selectBtn = document.getElementById("btn-select-assets");
+    const reactivateBtn = document.getElementById("btn-reactivate-assets");
+
+    if (savedHandle) {
+        try {
+            const status = await savedHandle.queryPermission({ mode: "read" });
+            if (status === "granted") {
+                await scanDirectoryHandle(savedHandle);
+                if (reactivateBtn) reactivateBtn.style.display = "none";
+                if (selectBtn) selectBtn.textContent = "📂 Anderer Ordner";
+            } else {
+                if (reactivateBtn) reactivateBtn.style.display = "inline-flex";
+                if (selectBtn) selectBtn.textContent = "📂 Anderer Ordner";
+            }
+        } catch (e) {
+            console.error("Error checking directory permission:", e);
+        }
+    } else {
+        if (reactivateBtn) reactivateBtn.style.display = "none";
+        if (selectBtn) selectBtn.textContent = "📂 Ordner wählen";
     }
 }
 

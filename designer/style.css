@@ -179,6 +179,16 @@ body {
     background-color: var(--color-danger-hover);
 }
 
+.btn-success {
+    background-color: hsl(150, 45%, 45%);
+    color: var(--bg-darker);
+}
+
+.btn-success:hover {
+    background-color: hsl(150, 55%, 52%);
+    box-shadow: 0 0 15px hsla(150, 45%, 55%, 0.2);
+}
+
 .btn-file-label {
     cursor: pointer;
 }
