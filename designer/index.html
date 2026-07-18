@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Visueller Story-Designer für das Kambrium Dating Sim Spiel. Erstelle Szenen, Dialoge, Entscheidungen und teste dein Spiel direkt im Browser.">
+    <title>Kambrium Dating Sim - Engine Designer</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="emoji">🦖</span>
+                <div class="title-group">
+                    <h1>Kambrium Engine Designer</h1>
+                    <span class="sub">Kambrium Dating Simulation Studio</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="btn-new-project" class="btn btn-secondary">Neues Projekt</button>
+                <button id="btn-load-demo" class="btn btn-secondary">Demo laden</button>
+                <label for="file-import" class="btn btn-secondary btn-file-label">
+                    JSON Importieren
+                    <input type="file" id="file-import" accept=".json" style="display: none;">
+                </label>
+                <button id="btn-export" class="btn btn-primary">JSON Exportieren <span class="kbd-hint">Ctrl+S</span></button>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <div class="app-body">
+            <!-- SIDEBAR TOGGLE -->
+            <button id="btn-sidebar-toggle" class="sidebar-toggle" title="Sidebar ein-/ausblenden">◀</button>
+            <!-- SIDEBAR -->
+            <aside id="app-sidebar" class="app-sidebar">
+                <!-- ASSET MANAGER -->
+                <section class="sidebar-section asset-manager-section">
+                    <div class="section-header">
+                        <h2>📁 Assets</h2>
+                    </div>
+                    <div class="asset-folder-controls">
+                        <button id="btn-select-assets" class="btn btn-primary btn-sm asset-folder-btn">📂 Ordner wählen</button>
+                        <input type="file" id="fallback-dir-input" webkitdirectory directory multiple style="display: none;">
+                        <button id="btn-clear-assets" class="btn btn-danger btn-sm" title="Asset-Cache leeren" style="display: none;">×</button>
+                    </div>
+                    <div id="asset-status" class="asset-status">
+                        <span class="asset-status-icon">⚠️</span>
+                        <span class="asset-status-text">Kein Ordner gewählt</span>
+                    </div>
+                    <div id="asset-details" class="asset-details" style="display: none;">
+                        <div class="asset-detail-row"><span>Hintergründe</span><span id="asset-count-bg" class="asset-count-badge">0</span></div>
+                        <div class="asset-detail-row"><span>Sprites</span><span id="asset-count-sprites" class="asset-count-badge">0</span></div>
+                        <div class="asset-detail-row"><span>BGM</span><span id="asset-count-bgm" class="asset-count-badge">0</span></div>
+                        <div class="asset-detail-row"><span>SFX</span><span id="asset-count-sfx" class="asset-count-badge">0</span></div>
+                    </div>
+                </section>
+
+                <!-- SCENE MANAGER -->
+                <section class="sidebar-section">
+                    <div class="section-header">
+                        <h2>Szenen</h2>
+                        <button id="btn-add-scene" class="btn-icon" title="Neue Szene">+</button>
+                    </div>
+                    <div class="start-scene-selector">
+                        <label for="select-start-scene">Startszene:</label>
+                        <select id="select-start-scene" class="input-select"></select>
+                    </div>
+                    <ul id="scenes-list" class="sidebar-list"></ul>
+                </section>
+
+                <!-- VARIABLE MANAGER -->
+                <section class="sidebar-section">
+                    <div class="section-header">
+                        <h2>Variablen &amp; Flags</h2>
+                    </div>
+                    
+                    <div class="sub-tabs">
+                        <button class="sub-tab-btn active" data-subtab="flags">Flags (Bool)</button>
+                        <button class="sub-tab-btn" data-subtab="numbers">Variablen (Int)</button>
+                        <button class="sub-tab-btn" data-subtab="characters">Charaktere</button>
+                        <button class="sub-tab-btn" data-subtab="player">Spieler</button>
+                    </div>
+
+                    <!-- Flags -->
+                    <div class="sub-tab-content active" id="subtab-flags">
+                        <div class="add-var-row">
+                            <input type="text" id="input-new-flag" placeholder="Flag-Name..." class="input-text">
+                            <button id="btn-add-flag" class="btn btn-primary">+</button>
+                        </div>
+                        <ul id="flags-list" class="var-list"></ul>
+                    </div>
+
+                    <!-- Numbers -->
+                    <div class="sub-tab-content" id="subtab-numbers">
+                        <div class="add-var-row">
+                            <input type="text" id="input-new-num" placeholder="Variablenname..." class="input-text">
+                            <input type="number" id="input-new-num-val" value="0" class="input-number" style="width: 60px;">
+                            <button id="btn-add-num" class="btn btn-primary">+</button>
+                        </div>
+                        <ul id="numbers-list" class="var-list"></ul>
+                    </div>
+
+                    <!-- Characters -->
+                    <div class="sub-tab-content" id="subtab-characters">
+                        <div class="add-var-row">
+                            <input type="text" id="input-new-char-id" placeholder="ID (z.b. grug)..." class="input-text">
+                            <input type="text" id="input-new-char-name" placeholder="Name (z.b. Grug)..." class="input-text">
+                            <button id="btn-add-char" class="btn btn-primary">+</button>
+                        </div>
+                        <ul id="characters-list" class="var-list"></ul>
+                    </div>
+
+                    <!-- Player -->
+                    <div class="sub-tab-content" id="subtab-player">
+                        <div style="display:flex; flex-direction:column; gap:10px; padding:6px 0;">
+                            <div class="form-group">
+                                <label for="input-player-name" style="margin-bottom:4px; display:block; font-size:12px; color:var(--text-muted);">Spielername (Standard)</label>
+                                <input type="text" id="input-player-name" class="input-text" style="width:100%; box-sizing:border-box;" onchange="updatePlayerName(this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label for="select-player-pronoun" style="margin-bottom:4px; display:block; font-size:12px; color:var(--text-muted);">Pronomen (Standard)</label>
+                                <select id="select-player-pronoun" class="input-select" style="width:100%;" onchange="updatePlayerPronoun(this.value)">
+                                    <option value="Er">Er/Ihn</option>
+                                    <option value="Sie">Sie/Ihr</option>
+                                    <option value="Dey">Dey/Deren</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- EDITOR WORKSPACE -->
+            <main class="app-workspace">
+                <!-- WORKSPACE TABS -->
+                <div class="workspace-tabs">
+                    <button class="tab-btn active" data-tab="script">📝 Script Editor</button>
+                    <button class="tab-btn" data-tab="graph">🗺️ Visual Flow Graph</button>
+                    <button class="tab-btn" data-tab="playtest">🕹️ Playtester</button>
+                </div>
+
+                <!-- TAB CONTENT: SCRIPT EDITOR -->
+                <div class="tab-content active" id="tab-script">
+                    <div class="scene-editor-header">
+                        <div class="scene-title-edit">
+                            <input type="text" id="input-scene-name" class="input-scene-title" placeholder="Szenenname...">
+                            <span class="scene-id-badge" id="lbl-scene-id">ID: </span>
+                        </div>
+                        <div class="scene-editor-actions">
+                            <button id="btn-delete-scene" class="btn btn-danger">Szene Löschen</button>
+                        </div>
+                    </div>
+
+                    <div class="commands-workspace">
+                        <div class="commands-header">
+                            <h3>Befehlsabfolge</h3>
+                            <div class="add-command-bar">
+                                <label for="select-new-cmd-type">Neuer Befehl:</label>
+                                <select id="select-new-cmd-type" class="input-select">
+                                    <option value="Say">Say (Dialog / Text)</option>
+                                    <option value="Show">Show Character (Anzeigen)</option>
+                                    <option value="Hide">Hide Character (Verstecken)</option>
+                                    <option value="Background">Background (Hintergrund)</option>
+                                    <option value="Choice">Choice (Entscheidung)</option>
+                                    <option value="ModifyVariables">Auswirkungen (Variablen ändern)</option>
+                                    <option value="Branch">Branch (Bedingte Verzweigung)</option>
+                                    <option value="Jump">Jump (Springen)</option>
+                                    <option value="PlayBgm">Play BGM (Musik)</option>
+                                    <option value="PlaySfx">Play SFX (Soundeffekt)</option>
+                                    <option value="StopBgm">Stop BGM</option>
+                                    <option value="ShakeWindow">Shake Window (Fensterschütteln)</option>
+                                    <option value="GlitchText">Glitch Text</option>
+                                    <option value="FakeError">Fake Error (Fehlermeldung)</option>
+                                </select>
+                                <button id="btn-add-command" class="btn btn-primary">Hinzufügen</button>
+                            </div>
+                        </div>
+
+                        <div id="commands-list-container" class="commands-list script-graph-canvas">
+                            <div id="script-graph-transform-container" class="script-graph-transform-container">
+                                <svg id="script-graph-svg" class="script-graph-svg">
+                                    <defs>
+                                        <marker id="script-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--color-primary)" />
+                                        </marker>
+                                        <marker id="choice-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--color-accent)" />
+                                        </marker>
+                                        <marker id="jump-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--color-cmd-scene)" />
+                                        </marker>
+                                    </defs>
+                                    <g id="script-graph-edges"></g>
+                                    <path id="drag-connection-line" class="dragging-line" d="" style="display: none;"></path>
+                                </svg>
+                                <div id="script-nodes-container" class="script-nodes-container">
+                                    <!-- Command nodes are dynamically injected here -->
+                                </div>
+                                <div id="script-graph-labels" class="script-graph-labels">
+                                    <!-- HTML labels for edges are dynamically injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State (shown when no scene selected) -->
+                    <div id="editor-empty-state" class="empty-state" style="display: none;">
+                        <div class="empty-icon">🦕</div>
+                        <h3>Keine Szene ausgewählt</h3>
+                        <p>Erstelle eine neue Szene über den "+"-Button in der Sidebar oder lade das Demo-Projekt.</p>
+                        <button class="btn btn-primary" onclick="document.getElementById('btn-add-scene').click()">+ Neue Szene erstellen</button>
+                    </div>
+                </div>
+
+                <!-- TAB CONTENT: VISUAL FLOW GRAPH -->
+                <div class="tab-content" id="tab-graph">
+                    <div class="graph-instructions">
+                        Hier siehst du die Struktur deines Spiels. Jede Box repräsentiert eine Szene. Die Pfeile zeigen, welche Szenen durch Entscheidungen oder Jumps miteinander verknüpft sind. Klicke auf eine Szene, um sie im Script Editor zu bearbeiten.
+                    </div>
+                    <div class="graph-container">
+                        <svg id="scene-graph-svg" width="100%" height="100%">
+                            <!-- Markers for arrows -->
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="18" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#c2996b" />
+                                </marker>
+                            </defs>
+                            <g id="graph-content"></g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- TAB CONTENT: PLAYTESTER -->
+                <div class="tab-content" id="tab-playtest">
+                    <div class="playtest-layout">
+                        <!-- Playtest Console / Screen -->
+                        <div class="playtest-screen-container">
+                            <div class="playtest-controls">
+                                <button id="btn-pt-reset" class="btn btn-secondary btn-sm">🔄 Reset</button>
+                                <button id="btn-pt-ff" class="btn btn-secondary btn-sm">⏩ Fast Forward</button>
+                                <span class="playtest-status" id="pt-status-info">Inaktiv</span>
+                            </div>
+                            
+                            <!-- Game Viewport (Simulating 1280x720) -->
+                            <div id="playtest-viewport" class="playtest-viewport">
+                                <!-- Background Layer -->
+                                <div id="pt-background" class="pt-background"></div>
+                                
+                                <!-- Character Sprites Layer -->
+                                <div id="pt-characters" class="pt-characters">
+                                    <!-- Shown characters will be placed here -->
+                                </div>
+
+                                <!-- Textbox Layer -->
+                                <div id="pt-textbox" class="pt-textbox hidden">
+                                    <div class="pt-namebox" id="pt-char-name">Grug</div>
+                                    <div class="pt-textcontent" id="pt-text-content">Hallo!</div>
+                                    <div class="pt-clickindicator">▼</div>
+                                </div>
+
+                                <!-- Choices Layer -->
+                                <div id="pt-choices-overlay" class="pt-choices-overlay hidden">
+                                    <div id="pt-choices-list" class="pt-choices-list">
+                                        <!-- Choice buttons injected here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Playtest Debugger (Variables and Log) -->
+                        <div class="playtest-debugger">
+                            <div class="dbg-section">
+                                <h3>Variablenzustand</h3>
+                                <div id="dbg-variables-list" class="dbg-var-list">
+                                    <!-- Current live variable values -->
+                                </div>
+                            </div>
+                            <div class="dbg-section">
+                                <h3>Ereignisprotokoll</h3>
+                                <div id="dbg-log" class="dbg-log"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- FAKE WINDOW / POPUP SYSTEM FOR SUBVERSION COMMANDS -->
+    <div id="fake-error-modal" class="fake-modal hidden">
+        <div class="fake-window">
+            <div class="fake-window-titlebar">
+                <span id="fake-error-title">Meldung</span>
+                <button class="fake-window-close-btn" onclick="document.getElementById('fake-error-modal').classList.add('hidden')">×</button>
+            </div>
+            <div class="fake-window-body">
+                <div class="fake-error-icon">⚠️</div>
+                <div class="fake-error-message" id="fake-error-msg">Ein kritischer Fehler ist aufgetreten.</div>
+            </div>
+            <div class="fake-window-actions">
+                <button class="btn btn-secondary" onclick="document.getElementById('fake-error-modal').classList.add('hidden')">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
